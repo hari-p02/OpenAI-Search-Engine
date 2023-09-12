@@ -39,3 +39,63 @@ while True:
         time.sleep(0.5)
     except:
         break
+
+club_names = list(
+    map(
+        lambda x: x.text,
+        driver.find_elements(
+            By.CSS_SELECTOR, "#org-search-results div div div div div div:nth-child(2)"
+        ),
+    )
+)
+
+
+club_short_desc = list(
+    map(
+        lambda x: x.text,
+        driver.find_elements(
+            By.CSS_SELECTOR, "#org-search-results div div div div div div p"
+        ),
+    )
+)
+
+club_total_desc = []
+
+club_urls = [
+    element.get_attribute("href")
+    for element in driver.find_elements(By.CSS_SELECTOR, "#org-search-results div a")
+]
+
+
+for url in club_urls:
+    driver.get(url)
+    # time.sleep(0.5)
+    desc = "\n".join(
+        list(map(lambda x: x.text, driver.find_elements(By.CSS_SELECTOR, "p")))
+    )
+    club_total_desc.append(desc)
+    driver.back()
+
+
+# print(club_names)
+
+# print()
+
+# print(club_short_desc)
+
+# print()
+
+# print(club_total_desc)
+
+df = pd.DataFrame(
+    data={
+        "Club Names": club_names,
+        "Club Short Descriptions": club_short_desc,
+        "Club Long Descriptions": club_total_desc,
+        "Club Urls": club_urls,
+    }
+)
+
+df.to_csv("UCONN_CLUB_INFO.csv")
+
+driver.close()
