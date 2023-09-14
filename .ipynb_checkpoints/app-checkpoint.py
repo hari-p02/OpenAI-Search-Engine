@@ -4,18 +4,18 @@ from dotenv import load_dotenv
 import openai
 import os
 import pinecone
+import requests
+from bs4 import BeautifulSoup as bs
+
 load_dotenv()
 pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment='asia-southeast1-gcp-free')
 openai.api_key = os.getenv("OPENAI_API_KEY")
 index = pinecone.Index("clubs-index")
 
-
-
-
 def search_engine(query):
     response = openai.Embedding.create(
-    input="computer science",
-    model="text-embedding-ada-002"
+        input=query,
+        model="text-embedding-ada-002"
     )
     query_embedding = response['data'][0]['embedding']
     query_response = index.query(
@@ -33,21 +33,49 @@ def search_engine(query):
         temp["name"] = m["metadata"]["Club Name"]
         temp["short_desc"] = m["metadata"]["Club Short Description"]
         temp["long_desc"] = m["metadata"]["Club Long Description"]
+        # temp["image_url"] = driver.find_element(By.CSS_SELECTOR, "img").get_attribute("src")
         ret.append(temp.copy())
     
     return ret
 
-def display_card(result):
-    col1, col2 = st.beta_columns([1, 3])
+def display_card(title, short, description, url):
+    # Define custom styles for the card
+    card_style = """
+        <style>
+            .card {
+                border: 1px solid #d4d4d4;
+                border-radius: 4px;
+                padding: 10px;
+                box-shadow: 2px 2px 12px #aaa;
+                margin: 10px 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .card img {
+                max-width: 100%;
+                height: auto;
+            }
+        </style>
+    """
+    st.markdown(card_style, unsafe_allow_html=True)
+    
+    card_html = f"""
+        <div class="card">
+            <a href="{url}" alt="club link"><h2>{title}</h2></a>
+            <h3>{short}</h3>
+            <p>{description}</p>
+        </div>
+    """
+    
+    st.markdown(card_html, unsafe_allow_html=True)
+    
+    # st.write(f"## {title}")
+    # st.write(f"### {short}")
+    # st.write(description)
+    # st.write(imageurl)
+        
 
-    with col1:
-        st.image("https://via.placeholder.com/100")  # Use an appropriate image or logo
-
-    with col2:
-        st.markdown(f"**{result['name']}**")
-        st.markdown(result['name'])
-        st.markdown(result['short_desc'])
-        st.markdown(result['long_desc'])
 
 st.set_page_config(
     page_title="UCONN Clubs Search Engine", page_icon="🐍", layout="wide"
@@ -62,6 +90,6 @@ if query:
     if results:
         st.write("Search Results:")
         for r in results:
-            st.json(r)
+            display_card(r["name"], r["short_desc"], r["long_desc"], r["url"])
     else:
         st.write("No results found!")
