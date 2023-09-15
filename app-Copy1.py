@@ -20,7 +20,7 @@ def search_engine(query):
     query_embedding = response['data'][0]['embedding']
     query_response = index.query(
         namespace='uconn-clubs',
-        top_k=10,
+        top_k=5,
         include_values=True,
         include_metadata=True,
         vector=query_embedding,
@@ -47,24 +47,22 @@ def display_card(title, short, description, url):
                 border-radius: 4px;
                 padding: 10px;
                 box-shadow: 2px 2px 12px #aaa;
-                margin: 10px 0;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-            }
-            .card img {
-                max-width: 100%;
-                height: auto;
-            }
+                justify-content: center;
+            }            
         </style>
     """
     st.markdown(card_style, unsafe_allow_html=True)
     
     card_html = f"""
-        <div class="card">
+         <div class="card">
+          <div class="content">
             <a href="{url}" alt="club link"><h2>{title}</h2></a>
-            <h3>{short}</h3>
+             <h3>{short}</h3>
             <p>{description}</p>
+          </div>
         </div>
     """
     
