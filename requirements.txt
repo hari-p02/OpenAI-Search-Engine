@@ -1,0 +1,8 @@
+pandas
+langchain
+python-dotenv
+openai
+pinecone-client
+selenium
+retrying
+numpy
